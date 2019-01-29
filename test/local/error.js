@@ -5,8 +5,9 @@
 'use strict'
 
 const { assert } = require('chai')
-var messages = require('joi/lib/language')
+const messages = require('joi/lib/language')
 const AppError = require('../../lib/error')
+const P = require('../../lib/promise')
 
 describe('AppErrors', () => {
 
@@ -111,6 +112,76 @@ describe('AppErrors', () => {
 
     }
   )
+
+  it('unexpectedError without request data', () => {
+    const err = AppError.unexpectedError()
+    assert.instanceOf(err, AppError)
+    assert.instanceOf(err, Error)
+    assert.equal(err.errno, 999)
+    assert.equal(err.message, 'Unspecified error')
+    assert.equal(err.output.statusCode, 500)
+    assert.equal(err.output.payload.error, 'Internal Server Error')
+    assert.isUndefined(err.output.payload.request)
+  })
+
+  it('unexpectedError with request data', () => {
+    const err = AppError.unexpectedError({
+      app: {
+        acceptLanguage: 'en, fr',
+        locale: 'en',
+        geo: {
+          city: 'Mountain View',
+          state: 'California'
+        },
+        ua: {
+          os: 'Android',
+          osVersion: '9'
+        },
+        devices: P.resolve([ { id: 1 } ]),
+        metricsContext: P.resolve({
+          service: 'sync'
+        })
+      },
+      method: 'GET',
+      path: '/v1/wibble',
+      query: {
+        foo: 'bar'
+      },
+      payload: {
+        baz: 'qux'
+      },
+      headers: {
+        wibble: 'blee'
+      }
+    })
+    assert.equal(err.errno, 999)
+    assert.equal(err.message, 'Unspecified error')
+    assert.equal(err.output.statusCode, 500)
+    assert.equal(err.output.payload.error, 'Internal Server Error')
+    assert.deepEqual(err.output.payload.request, {
+      acceptLanguage: 'en, fr',
+      locale: 'en',
+      geo: {
+        city: 'Mountain View',
+        state: 'California'
+      },
+      userAgent: {
+        os: 'Android',
+        osVersion: '9'
+      },
+      method: 'GET',
+      path: '/v1/wibble',
+      query: {
+        foo: 'bar'
+      },
+      payload: {
+        baz: 'qux'
+      },
+      headers: {
+        wibble: 'blee'
+      }
+    })
+  })
 
   const reasons = ['socket hang up', 'ECONNREFUSED'];
   reasons.forEach((reason) => {
