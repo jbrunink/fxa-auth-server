@@ -4,14 +4,14 @@
 
 /*jshint camelcase: false*/
 const Joi = require('joi');
-
+const AppError = require('../error');
 const db = require('../db');
 const encrypt = require('../encrypt');
 const validators = require('../validators');
-
+const hex = require('buf').to.hex;
 
 const PAYLOAD_SCHEMA = Joi.object({
-  token: validators.token.required(),
+  token: Joi.string().required(),
   token_type_hint: Joi.string().allow('refresh_token')
 });
 
@@ -27,44 +27,50 @@ module.exports = {
       client_id: validators.clientId.optional(),
       username: Joi.string(),
       token_type: Joi.string().allow('refresh_token'),
-      exp: Joi.number(), // expiry time
+      //exp: Joi.number(), // expiry time
       iat: Joi.number(), // issue time
       nbf: Joi.number(), // no use before time
-      sub: validators.string().required(), // subject
+      sub: Joi.string().required(), // subject
       aud: Joi.string(), // audience
       iss: Joi.string(), // issuer
-      jti: validators.token.required(), // string identifier, as defined in JWT
-      email: validators.email().required(),
+      jti: Joi.string().required(), // string identifier, as defined in JWT
+      email: Joi.string().required(),
       last_used_at: Joi.any().required(),
       profile_changed_at: Joi.any().required(),
     })
   },
   handler: async function tokenEndpoint(req) {
     let refreshToken;
-
+    console.log('pppp', req.payload)
     try {
-      refreshToken = await db.getRefreshToken(encrypt.hash(req.payload.refresh_token));
+      refreshToken = await db.getRefreshToken(encrypt.hash(req.payload.token));
     } catch (err) {
+
+      throw new AppError.invalidToken();
       // TODO - add some logging here
     }
+
 
     const response = {
       active: !! refreshToken
     };
 
+    console.log('refreshToken', refreshToken)
+
     if (refreshToken) {
       Object.assign(response, {
-        scope: refreshToken.scope,
-        client_id: refreshToken.clientId,
+        //scope: refreshToken.scope,
+        scope: 'profile https://identity.mozilla.com/apps/oldsync',
+        client_id: hex(refreshToken.clientId),
         // username
         token_type: 'refresh_token',
         // exp
-        iat: refreshToken.createdAt,
-        nbf: refreshToken.createdAt,
-        sub: refreshToken.userId,
-        jti: refreshToken.token,
+        iat: refreshToken.createdAt.getTime(),
+        nbf: refreshToken.createdAt.getTime(),
+        sub: hex(refreshToken.userId),
+        jti: hex(refreshToken.token),
         email: refreshToken.email,
-        last_used_at: refreshToken.lastUsedAt,
+        last_used_at: refreshToken.lastUsedAt.getTime(),
         profile_changed_at: refreshToken.profileChangedAt,
       });
     }
