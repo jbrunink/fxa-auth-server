@@ -35,7 +35,7 @@ see [`mozilla/fxa-js-client`](https://github.com/mozilla/fxa-js-client).
   * [Devices and sessions](#devices-and-sessions)
     * [POST /account/device (:lock: sessionToken, refreshToken)](#post-accountdevice)
     * [GET /account/device/commands (:lock: sessionToken, refreshToken)](#get-accountdevicecommands)
-    * [POST /account/devices/invoke_command (:lock: sessionToken)](#post-accountdevicesinvoke_command)
+    * [POST /account/devices/invoke_command (:lock: sessionToken, refreshToken)](#post-accountdevicesinvoke_command)
     * [POST /account/devices/notify (:lock: sessionToken, refreshToken)](#post-accountdevicesnotify)
     * [GET /account/devices (:lock: sessionToken, refreshToken)](#get-accountdevices)
     * [GET /account/sessions (:lock: sessionToken, refreshToken)](#get-accountsessions)
@@ -1221,7 +1221,7 @@ see the [device registration](device_registration.md) docs.
 
 #### POST /account/devices/invoke_command
 
-:lock: HAWK-authenticated with session token
+:lock: HAWK-authenticated with session token, or HAWK-authenticated with refresh token
 <!--begin-route-post-accountdevicesinvoke_command-->
 Enqueues a command to be invoked on a target device.
 
