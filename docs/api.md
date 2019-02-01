@@ -1055,13 +1055,13 @@ can be made available to other connected devices.
   
   <!--end-request-body-post-accountdevice-id-->
 
-* `name`: *DEVICES_SCHEMA.name.optional*;<br />or *DEVICES_SCHEMA.name.required*
+* `name`: *DEVICES_SCHEMA.name.optional*
 
   <!--begin-request-body-post-accountdevice-name-->
   
   <!--end-request-body-post-accountdevice-name-->
 
-* `type`: *DEVICES_SCHEMA.type.optional*;<br />or *DEVICES_SCHEMA.type.required*
+* `type`: *DEVICES_SCHEMA.type.optional*
 
   <!--begin-request-body-post-accountdevice-type-->
   
